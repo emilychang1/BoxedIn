@@ -10,6 +10,7 @@ from cocos.scenes import *
 from cocos.sprite import Sprite
 from cocos.actions import *
 from pyglet.window.key import symbol_string
+import time
 
 
 
@@ -17,7 +18,6 @@ from pyglet.window.key import symbol_string
 # Let's be fancy and make this a color layer AND an event handler
 class InputLayer(cocos.layer.ColorLayer):
     is_event_handler = True
-    key_held = False
 
     def __init__(self, x=320, y=240, is_trippy=False):
         super(InputLayer, self).__init__(46, 204, 113, 1000)
@@ -29,6 +29,10 @@ class InputLayer(cocos.layer.ColorLayer):
         self.sprite.opacity = 0
         self.add(self.sprite)
         self.sprite.do(FadeIn(2))
+
+        self.schedule_interval(self.movement, 0.1)
+        self.left_move = False
+        self.right_move = False
 
         # You should be bored seeing this same code over and over again
         # Here's something different though
@@ -42,18 +46,15 @@ class InputLayer(cocos.layer.ColorLayer):
     # We'll let the user move in any direction on the screen with the arrow keys
     # We'll only be doing keyboard input for this program
     def on_key_press(self, key, modifiers):
-        # If you don't know what these next couple lines do, go check the previous tutorials
-        move_left = MoveBy((-50, 0), .5)
-        move_up = MoveBy((0, 50), .5)
-
-    
         if symbol_string(key) == "LEFT":
-            self.sprite.do(move_left)
+            #self.sprite.do(move_left)
+            self.left_move = True
 
 
         # Or maybe if they want to move right?
         elif symbol_string(key) == "RIGHT":
-            self.sprite.do(Reverse(move_left)) 
+            #self.sprite.do(Reverse(move_left)) 
+            self.right_move = True
 
         # That's it for movements!
         # Now let's look at transitioning to a new scene
@@ -67,33 +68,27 @@ class InputLayer(cocos.layer.ColorLayer):
             coordinates = self.sprite.position
             # You should try printing the X and Y coordinates yourself to see the type of object that it returns
 
-        key_held = True
 
-        self.schedule_interval(self.movement, key)
+    def movement(self, dt):
 
-        print("why")
+        move_left = MoveBy((-50, 0), .5)
 
-    def movement(self, key):
+        # Check if they want to go left, and then actually make the sprite go left
+        if self.left_move == True:
+            self.sprite.do(move_left)
 
-        print("ok")
-        while (key_held == True):
-            print("hey")
-            move_left = MoveBy((-50, 0), .5)
-            move_up = MoveBy((0, 50), .5)
-            # Check if they want to go left, and then actually make the sprite go left
-            if symbol_string(key) == "LEFT":
-                self.sprite.do(move_left)
+        # Or maybe if they want to move right?
+        elif self.right_move == True:
+            self.sprite.do(Reverse(move_left)) 
 
-            # Or maybe if they want to move right?
-            elif symbol_string(key) == "RIGHT":
-                self.sprite.do(Reverse(move_left)) 
 
 
 
 
     def on_key_release(self, key, modifiers):
 
-        key_held = False
+        self.left_move = False
+        self.right_move = False
 
 
         
