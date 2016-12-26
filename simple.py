@@ -1,7 +1,3 @@
-# Alright!
-# It's time for us to string everything we learned in the basics tutorial together
-
-# Let's start with all of the inputs we need
 import cocos
 from cocos import scene
 from cocos.layer import Layer, ColorLayer
@@ -12,10 +8,6 @@ from cocos.actions import *
 from pyglet.window.key import symbol_string
 import time
 
-
-
-
-# Let's be fancy and make this a color layer AND an event handler
 class InputLayer(cocos.layer.ColorLayer):
     is_event_handler = True
 
@@ -23,7 +15,6 @@ class InputLayer(cocos.layer.ColorLayer):
         super(InputLayer, self).__init__(46, 204, 113, 1000)
 
 
-        # Now we need a little guy to manipulate
         self.sprite = Sprite('assets/85857.png')
         self.sprite.position = x, y
         self.sprite.opacity = 0
@@ -34,55 +25,28 @@ class InputLayer(cocos.layer.ColorLayer):
         self.left_move = False
         self.right_move = False
 
-        # You should be bored seeing this same code over and over again
-        # Here's something different though
-        # Now I create an audio object and store it within self, based on whether or not it's trippy
-  
 
-
-        # We don't need anything else here, let's just let our sprite be moved in the event handlers
-
-    # So now we can overload some default event handlers
-    # We'll let the user move in any direction on the screen with the arrow keys
-    # We'll only be doing keyboard input for this program
     def on_key_press(self, key, modifiers):
         if symbol_string(key) == "LEFT":
-            #self.sprite.do(move_left)
             self.left_move = True
 
-
-        # Or maybe if they want to move right?
         elif symbol_string(key) == "RIGHT":
-            #self.sprite.do(Reverse(move_left)) 
             self.right_move = True
 
-        # That's it for movements!
-        # Now let's look at transitioning to a new scene
-        # Let's make the game all trippy when they hit space
+
         elif symbol_string(key) == "SPACE":
-            # I need to stop the music before we transition to the next scene so that two songs aren't playing at once
-            # self.bg_music.stop()
-
-            # If you were paying attention, you would've noticed I take three parameters in the init function
-            # I get the X and Y coordinates of the sprite to figure out where to place it when the scenes transition
             coordinates = self.sprite.position
-            # You should try printing the X and Y coordinates yourself to see the type of object that it returns
 
-
+    """ move sprite in the appropriate direction as long as left/right key is held"""
     def movement(self, dt):
 
-        move_left = MoveBy((-50, 0), .5)
+        move_left = MoveBy((-20, 0), .1)
 
-        # Check if they want to go left, and then actually make the sprite go left
         if self.left_move == True:
             self.sprite.do(move_left)
 
-        # Or maybe if they want to move right?
         elif self.right_move == True:
             self.sprite.do(Reverse(move_left)) 
-
-
-
 
 
     def on_key_release(self, key, modifiers):
@@ -91,9 +55,5 @@ class InputLayer(cocos.layer.ColorLayer):
         self.right_move = False
 
 
-        
-
-# And finally we do our usual initialization and run the scene
-# mixer.init()
 director.init()
 director.run(scene.Scene(InputLayer()))
