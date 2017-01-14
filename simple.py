@@ -30,11 +30,10 @@ class InputLayer(cocos.layer.ColorLayer):
         self.enemy.opacity = 0
         self.add(self.enemy, z = 2)
         self.enemy.do(FadeIn(2))
-
         self.enemy_locations = []
         self.message = [0]
-
         self.score = 0
+        self.game_over_sprite = cocos.sprite.Sprite('assets/nothappy.png')
         
 
         self.schedule_interval(self.movement, 0.05)
@@ -46,9 +45,6 @@ class InputLayer(cocos.layer.ColorLayer):
         self.up_move = False
         self.down_move = False 
         self.game_over = False
-
-
-
 
 
 
@@ -66,7 +62,7 @@ class InputLayer(cocos.layer.ColorLayer):
             self.down_move = True   
 
 
-    def myround(self, x, base = 30):
+    def myround(self, x, base = 50):
         return int(base * round(float(x)/base))
 
     def add_mini(self, dt):
@@ -77,9 +73,7 @@ class InputLayer(cocos.layer.ColorLayer):
         self.add(self.mini, z = 1)
         mini_position = self.myround(mini_position[0]), self.myround(mini_position[1])
         self.enemy_locations.append(mini_position)
-        
-
-    
+   
 
     def movement(self, dt):
 
@@ -106,8 +100,12 @@ class InputLayer(cocos.layer.ColorLayer):
         fall = RotateBy(90, 2)
 
         rounded_sprite_position = self.myround(self.sprite.position[0]), self.myround(self.sprite.position[1])
-        if (distanceFromDino <= 80 or rounded_sprite_position in self.enemy_locations):
-            self.sprite.do(fall | MoveBy((0, -300), 3))
+        if (self.game_over == False and (distanceFromDino <= 80 or rounded_sprite_position in self.enemy_locations)):
+            self.game_over_sprite.position = self.sprite.position
+            self.game_over_sprite.scale = 0.7
+            self.add(self.game_over_sprite, z = 3)
+            self.remove(self.sprite)
+            #self.game_over_sprite.do(fall | MoveBy((0, -300), 3))
             msg1 = "GAME OVER"
             msg2 = "SCORE: " + str(self.score)
             self.msg1 = cocos.text.Label(msg1,
@@ -129,10 +127,6 @@ class InputLayer(cocos.layer.ColorLayer):
             self.add(self.msg1, z = 4)
             self.add(self.msg2, z = 5)
             self.game_over = True
-
-
-            
-
 
     def on_key_release(self, key, modifiers):
 
