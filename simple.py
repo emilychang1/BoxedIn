@@ -1,10 +1,14 @@
 import cocos
+import pyglet
+from pyglet.gl import *
 from cocos import scene
-from cocos.layer import Layer, ColorLayer
+from cocos.layer import *
 from cocos.director import director
 from cocos.scenes import *
 from cocos.sprite import Sprite
 from cocos.actions import *
+from cocos.menu import *
+from cocos.scene import *
 from pyglet.window.key import symbol_string
 
 import time
@@ -17,7 +21,7 @@ class InputLayer(cocos.layer.ColorLayer):
 
         self.sprite = Sprite('assets/happy.png')
         self.sprite.scale = 0.08
-        self.sprite.position = 320, 240
+        self.sprite.position = 420, 240
         self.sprite.speed = 125
         self.sprite.opacity = 0
         self.add(self.sprite, z = 3)
@@ -62,7 +66,7 @@ class InputLayer(cocos.layer.ColorLayer):
             self.down_move = True   
 
 
-    def myround(self, x, base = 50):
+    def myround(self, x, base = 80):
         return int(base * round(float(x)/base))
 
     def add_mini(self, dt):
@@ -79,19 +83,19 @@ class InputLayer(cocos.layer.ColorLayer):
 
         """ move sprite in the appropriate direction as long as left/right key is held"""
 
-        move_left = MoveBy((-20, 0), .1)
-        move_up = MoveBy((0, 20), .1)
+        move_left = MoveBy((-10, 0), .05)
+        move_up = MoveBy((0, 10), .05)
 
-        if self.left_move == True and self.sprite.position[0] > 50:
+        if self.left_move == True and self.sprite.position[0] > 45:
             self.sprite.do(move_left)
 
-        elif self.right_move == True and self.sprite.position[0] < 590:
+        elif self.right_move == True and self.sprite.position[0] < 600:
             self.sprite.do(Reverse(move_left)) 
 
-        elif self.up_move == True and self.sprite.position[1] < 430:
+        elif self.up_move == True and self.sprite.position[1] < 440:
             self.sprite.do(move_up) 
 
-        elif self.down_move == True and self.sprite.position[1] > 50:
+        elif self.down_move == True and self.sprite.position[1] > 45:
             self.sprite.do(Reverse(move_up))
 
 
@@ -100,23 +104,23 @@ class InputLayer(cocos.layer.ColorLayer):
         fall = RotateBy(90, 2)
 
         rounded_sprite_position = self.myround(self.sprite.position[0]), self.myround(self.sprite.position[1])
-        if (self.game_over == False and (distanceFromDino <= 80 or rounded_sprite_position in self.enemy_locations)):
+        if (self.game_over == False and (distanceFromDino <= 90 or rounded_sprite_position in self.enemy_locations)):
             self.game_over_sprite.position = self.sprite.position
             self.game_over_sprite.scale = 0.7
             self.add(self.game_over_sprite, z = 3)
             self.remove(self.sprite)
-            #self.game_over_sprite.do(fall | MoveBy((0, -300), 3))
+            self.game_over_sprite.do(fall | MoveBy((0, -300), 3))
             msg1 = "GAME OVER"
             msg2 = "SCORE: " + str(self.score)
             self.msg1 = cocos.text.Label(msg1,
                                 font_size=25,
-                                font_name='Verdana',
+                                font_name='Georgia',
                                 anchor_y='center',
                                 anchor_x='center',
                                 color = (0,0,0,1000))
             self.msg2 = cocos.text.Label(msg2,
                                 font_size=25,
-                                font_name='Verdana',
+                                font_name='Georgia',
                                 anchor_y='center',
                                 anchor_x='center',
                                 color = (0,0,0,1000))
@@ -165,10 +169,40 @@ class InputLayer(cocos.layer.ColorLayer):
                 self.remove(self.message[0])
             del self.message[0]
 
+class MainMenu(Menu):
+
+    def __init__(self):
+        super(MainMenu, self).__init__("BOXED IN")
+        pyglet.font.add_directory('.')
+
+        self.font_title['font_name'] = 'Georgia'
+        self.font_title['font_size'] = 72
+
+        self.font_item['font_name'] = 'Georgia'
+        self.font_item['font_size'] = 35
+        self.font_item_selected['font_name'] = 'Georgia'
+        self.menu_valign = CENTER
+        self.menu_halign = CENTER
+
+        items = []
+        items.append(MenuItem('New Game', self.on_new_game))
+        items.append(MenuItem('Quit', self.on_quit))
+
+        self.create_menu(items)
+
+    def on_new_game(self):
+        director.run(scene.Scene(InputLayer()))
+
+
+    def on_quit(self):
+        director.pop()
+
+
 if __name__ == '__main__':
     cocos.director.director.init(caption= 'Boxed In')
-    
-    director.run(scene.Scene(InputLayer()))
+    menulayer = MultiplexLayer(MainMenu(), InputLayer())
+    scenes = Scene(menulayer)
+    director.run(scenes)
     
 director.init()   
 
