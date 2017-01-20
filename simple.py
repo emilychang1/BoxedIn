@@ -42,7 +42,7 @@ class InputLayer(cocos.layer.ColorLayer):
         self.game_over_sprite = cocos.sprite.Sprite('assets/nothappy.png')
         
 
-        self.schedule_interval(self.movement, 0.05)
+        self.schedule_interval(self.movement, 0.001)
         self.schedule_interval(self.enemy_attack, 0.5)
         self.schedule_interval(self.add_mini, 2)
         self.schedule_interval(self.scoreboard, 0.001)
@@ -71,18 +71,32 @@ class InputLayer(cocos.layer.ColorLayer):
     def myround(self, x, base):
         return int(base * round(float(x)/base))
 
-    def distance_from_sprite(self, x, y):
-        return ((self.sprite.position[0] - x) ** 2 + 
-                    (self.sprite.position[1] - y) ** 2) ** 0.5
+    def distance_from_sprite(self, pos):
+        return ((self.sprite.position[0] - pos[0]) ** 2 + 
+                    (self.sprite.position[1] - pos[1]) ** 2) ** 0.5
+
+    def find_closest_sprite(self):
+        smallest_distance = 500
+        smallest_pos = (0, 0)
+        l = []
+
+        for i in self.enemy_locations:
+            i_dist_from_sprite = self.distance_from_sprite(i)
+            if (i_dist_from_sprite < smallest_distance):
+                smallest_distance = i_dist_from_sprite
+                smallest_pos = i
+
+        return smallest_pos
+
+
 
     def add_mini(self, dt):
-        mini_position = self.enemy.position
         self.mini = cocos.sprite.Sprite('assets/ball.png')
-        self.mini.position = mini_position
+        self.mini.position = self.enemy.position
         self.mini.scale = 0.03
         self.add(self.mini, z = 1)
-        mini_position = self.myround(mini_position[0], 42), self.myround(mini_position[1], 42)
-        self.enemy_locations.append(mini_position)
+
+        self.enemy_locations.append(self.mini.position)
    
 
     def movement(self, dt):
@@ -105,11 +119,12 @@ class InputLayer(cocos.layer.ColorLayer):
             self.sprite.do(Reverse(move_up))
 
 
-        distanceFromDino = self.distance_from_sprite(self.enemy.position[0], self.enemy.position[1])
+        distanceFromDino = self.distance_from_sprite(self.enemy.position)
         fall = RotateBy(90, 2)
 
-        rounded_sprite_position = self.myround(self.sprite.position[0], 42), self.myround(self.sprite.position[1], 42)
-        if (self.game_over == False and (distanceFromDino <= 90 or rounded_sprite_position in self.enemy_locations)):
+        closest_sprite = self.find_closest_sprite()
+
+        if (self.game_over == False and (distanceFromDino <= 95 or self.distance_from_sprite(closest_sprite) < 60)):
             self.game_over_sprite.position = self.sprite.position
             self.game_over_sprite.scale = 0.7
             self.add(self.game_over_sprite, z = 3)
@@ -138,11 +153,18 @@ class InputLayer(cocos.layer.ColorLayer):
             self.game_over = True
 
     def on_key_release(self, key, modifiers):
+        if symbol_string(key) == "LEFT":
+            self.left_move = False
 
-        self.left_move = False
-        self.right_move = False
-        self.up_move = False
-        self.down_move = False 
+        elif symbol_string(key) == "RIGHT":
+            self.right_move = False
+
+        elif symbol_string(key) == "UP":
+            self.up_move = False
+
+        elif symbol_string(key) == "DOWN":
+            self.down_move = False   
+
         #default_y = MoveBy((0, -(self.sprite.position[1] - 240)), 0.5)
         #self.sprite.do(default_y)
 
