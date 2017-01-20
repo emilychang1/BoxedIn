@@ -21,6 +21,8 @@ class InputLayer(cocos.layer.ColorLayer):
 
         self.sprite = Sprite('assets/happy.png')
         self.sprite.scale = 0.08
+        #print(self.sprite.height)
+
         self.sprite.position = 420, 240
         self.sprite.speed = 125
         self.sprite.opacity = 0
@@ -66,8 +68,12 @@ class InputLayer(cocos.layer.ColorLayer):
             self.down_move = True   
 
 
-    def myround(self, x, base = 80):
+    def myround(self, x, base):
         return int(base * round(float(x)/base))
+
+    def distance_from_sprite(self, x, y):
+        return ((self.sprite.position[0] - x) ** 2 + 
+                    (self.sprite.position[1] - y) ** 2) ** 0.5
 
     def add_mini(self, dt):
         mini_position = self.enemy.position
@@ -75,7 +81,7 @@ class InputLayer(cocos.layer.ColorLayer):
         self.mini.position = mini_position
         self.mini.scale = 0.03
         self.add(self.mini, z = 1)
-        mini_position = self.myround(mini_position[0]), self.myround(mini_position[1])
+        mini_position = self.myround(mini_position[0], 42), self.myround(mini_position[1], 42)
         self.enemy_locations.append(mini_position)
    
 
@@ -99,11 +105,10 @@ class InputLayer(cocos.layer.ColorLayer):
             self.sprite.do(Reverse(move_up))
 
 
-        distanceFromDino = ((self.sprite.position[0] - self.enemy.position[0]) ** 2 + 
-                    (self.sprite.position[1] - self.enemy.position[1]) ** 2) ** 0.5
+        distanceFromDino = self.distance_from_sprite(self.enemy.position[0], self.enemy.position[1])
         fall = RotateBy(90, 2)
 
-        rounded_sprite_position = self.myround(self.sprite.position[0]), self.myround(self.sprite.position[1])
+        rounded_sprite_position = self.myround(self.sprite.position[0], 42), self.myround(self.sprite.position[1], 42)
         if (self.game_over == False and (distanceFromDino <= 90 or rounded_sprite_position in self.enemy_locations)):
             self.game_over_sprite.position = self.sprite.position
             self.game_over_sprite.scale = 0.7
@@ -204,8 +209,4 @@ if __name__ == '__main__':
     scenes = Scene(menulayer)
     director.run(scenes)
     
-director.init()   
-
-
-
-
+director.init() 
