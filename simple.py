@@ -19,16 +19,17 @@ class InputLayer(cocos.layer.ColorLayer):
     def __init__(self):
         super(InputLayer, self).__init__(248, 248, 255, 1000)
 
+
+        #add player
         self.sprite = Sprite('assets/happy.png')
         self.sprite.scale = 0.08
-        #print(self.sprite.height)
-
         self.sprite.position = 420, 240
         self.sprite.speed = 125
         self.sprite.opacity = 0
         self.add(self.sprite, z = 3)
         self.sprite.do(FadeIn(2))
 
+        #add opponent
         self.enemy = Sprite('assets/ball.png')
         self.enemy.scale = 0.08
         self.enemy.position = 220, 240
@@ -37,11 +38,11 @@ class InputLayer(cocos.layer.ColorLayer):
         self.add(self.enemy, z = 2)
         self.enemy.do(FadeIn(2))
         self.enemy_locations = []
+
         self.message = [0]
         self.score = 0
         self.game_over_sprite = cocos.sprite.Sprite('assets/nothappy.png')
         
-
         self.schedule_interval(self.movement, 0.001)
         self.schedule_interval(self.enemy_attack, 0.5)
         self.schedule_interval(self.add_mini, 2)
@@ -53,7 +54,7 @@ class InputLayer(cocos.layer.ColorLayer):
         self.game_over = False
 
 
-
+    """sets direction_move boolean variable to true as long as key is held"""
     def on_key_press(self, key, modifiers):
         if symbol_string(key) == "LEFT":
             self.left_move = True
@@ -67,19 +68,15 @@ class InputLayer(cocos.layer.ColorLayer):
         elif symbol_string(key) == "DOWN":
             self.down_move = True   
 
-
-    def myround(self, x, base):
-        return int(base * round(float(x)/base))
-
+    """returns the distance from the player, given an x,y position"""
     def distance_from_sprite(self, pos):
         return ((self.sprite.position[0] - pos[0]) ** 2 + 
                     (self.sprite.position[1] - pos[1]) ** 2) ** 0.5
 
+    """returns the blockade that is closest to the player"""
     def find_closest_sprite(self):
         smallest_distance = 500
         smallest_pos = (0, 0)
-        l = []
-
         for i in self.enemy_locations:
             i_dist_from_sprite = self.distance_from_sprite(i)
             if (i_dist_from_sprite < smallest_distance):
@@ -89,7 +86,7 @@ class InputLayer(cocos.layer.ColorLayer):
         return smallest_pos
 
 
-
+    """adds blockade dropped by the enemy sprite"""
     def add_mini(self, dt):
         self.mini = cocos.sprite.Sprite('assets/ball.png')
         self.mini.position = self.enemy.position
@@ -99,9 +96,10 @@ class InputLayer(cocos.layer.ColorLayer):
         self.enemy_locations.append(self.mini.position)
    
 
-    def movement(self, dt):
 
-        """ move sprite in the appropriate direction as long as left/right key is held"""
+    """ move sprite in the appropriate direction as long as left/right key is held. 
+    display game over message when player loses"""
+    def movement(self, dt):
 
         move_left = MoveBy((-10, 0), .05)
         move_up = MoveBy((0, 10), .05)
@@ -112,7 +110,7 @@ class InputLayer(cocos.layer.ColorLayer):
         elif self.right_move == True and self.sprite.position[0] < 600:
             self.sprite.do(Reverse(move_left)) 
 
-        elif self.up_move == True and self.sprite.position[1] < 440:
+        elif self.up_move == True and self.sprite.position[1] < 435:
             self.sprite.do(move_up) 
 
         elif self.down_move == True and self.sprite.position[1] > 45:
@@ -152,6 +150,7 @@ class InputLayer(cocos.layer.ColorLayer):
             self.add(self.msg2, z = 5)
             self.game_over = True
 
+    """sets boolean direction_move variable to false when key is no longer held"""
     def on_key_release(self, key, modifiers):
         if symbol_string(key) == "LEFT":
             self.left_move = False
@@ -165,9 +164,7 @@ class InputLayer(cocos.layer.ColorLayer):
         elif symbol_string(key) == "DOWN":
             self.down_move = False   
 
-        #default_y = MoveBy((0, -(self.sprite.position[1] - 240)), 0.5)
-        #self.sprite.do(default_y)
-
+    """moves enemy in the direction of player"""
     def enemy_attack(self, dt):
         if(self.game_over == False):
             distanceFromDino_x = self.sprite.position[0] - self.enemy.position[0]
@@ -176,6 +173,7 @@ class InputLayer(cocos.layer.ColorLayer):
             move_toward_dino = MoveBy((distanceFromDino_x, distanceFromDino_y), 3)
             self.enemy.do(move_toward_dino)
 
+    """increment scoreboard and display in top right corner"""
     def scoreboard(self, dt):
         if (self.game_over == False):
             self.score += 1
@@ -195,6 +193,8 @@ class InputLayer(cocos.layer.ColorLayer):
             if(self.message[0]):
                 self.remove(self.message[0])
             del self.message[0]
+
+
 
 class MainMenu(Menu):
 
@@ -223,6 +223,8 @@ class MainMenu(Menu):
 
     def on_quit(self):
         director.pop()
+
+
 
 
 if __name__ == '__main__':
